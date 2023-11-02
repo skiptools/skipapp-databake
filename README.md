@@ -1,7 +1,10 @@
 # DataBake
 
-This is a free [Skip](https://skip.tools) dual-platform app project.
-It builds a native app for both iOS and Android.
+This app demonstrates using a local database in a Skip app
+using the SkipSQL package to update a sqlite3 database.
+
+![Screenshot](https://assets.skip.tools/skipapp-databake-dev-screenshot.png)
+
 
 ## Building
 
