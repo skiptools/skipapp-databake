@@ -1,0 +1,21 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Database" : {
+
+    },
+    "Database Record %lld" : {
+
+    },
+    "Option" : {
+
+    },
+    "Record %lld" : {
+
+    },
+    "Settings" : {
+
+    }
+  },
+  "version" : "1.0"
+}
