@@ -1,10 +1,19 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld records" : {
+
+    },
+    "Clear Database" : {
+
+    },
     "Database" : {
 
     },
     "Database Record %lld" : {
+
+    },
+    "Increase Records" : {
 
     },
     "Option" : {

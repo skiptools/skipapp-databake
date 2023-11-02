@@ -52,7 +52,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "ANDROID_SERIAL"
-            value = "emulator-5554"
+            value = "19091FDF600BAY"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
