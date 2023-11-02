@@ -31,9 +31,9 @@ build:
             - block: 'release'
               contents:
                 # by default create an -unsigned.apk; for publishing to an app store, a valid keystore will need to be provided
-                - 'signingConfig = signingConfigs.findByName("release")'
+                - 'signingConfig = signingConfigs.findByName("debug")'
                 # enabling minification reduces compose dependency classe size ~85%
                 - 'isMinifyEnabled = true'
                 - 'isShrinkResources = true'
-                - 'isDebuggable = false'
+                - 'isDebuggable = true'
                 - 'proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")'

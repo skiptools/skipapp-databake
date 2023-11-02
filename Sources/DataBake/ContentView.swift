@@ -8,7 +8,7 @@ import SkipSQL
 let tableName = "DBTABLE"
 
 /// The local database
-let database = try! SQLContext(path: URL.temporaryDirectory.appendingPathComponent("sql.db").path, flags: [.readWrite, .create])
+let database = try! createSQLContext()
 
 struct ContentView: View {
     @AppStorage("setting") var setting = true
@@ -22,41 +22,34 @@ struct ContentView: View {
                     HStack {
                         Button("Increase Records") {
                             recordCount = (max(recordCount, 1)) * 2
-                            do {
-                                try database.exec(sql: "CREATE TABLE IF NOT EXISTS \(tableName) (STRING TEXT)")
-
-                                let stmnt = try database.prepare(sql: "INSERT INTO \(tableName) VALUES (?)")
-                                let startTime = Date.now
-                                try database.transaction {
-                                    for _ in 0..<recordCount {
-                                        try stmnt.bind(.text(UUID().uuidString), at: 1)
-                                    }
+                            Task.detached {
+                                do {
+                                    try await insert(rows: recordCount)
+                                } catch {
+                                    await msg("\(error)")
                                 }
-                                let t = Date.now.timeIntervalSince(startTime)
-                                self.message = "Inserted \(recordCount) into \(tableName) in \(t)"
-
-                            } catch {
-                                self.message = "\(error)"
                             }
                         }
                         Button("Clear Database") {
-                            do {
-                                recordCount = 1
-                                let startTime = Date.now
-                                let count = try database.exec(sql: "DELETE FROM \(tableName)")
-                                let t = Date.now.timeIntervalSince(startTime)
-                                self.message = "Cleared \(count) rows from \(tableName) in \(t)"
-                            } catch {
-                                self.message = "\(error)"
+                            Task.detached {
+                                do {
+                                    try await clearDatabase()
+                                } catch {
+                                    await msg("\(error)")
+                                }
                             }
                         }
                     }
-                    Text(self.message ?? " ").font(.title2)
+                    .buttonStyle(.borderedProminent)
+
                     Divider()
-                    List {
-                        ForEach(Array(0..<recordCount), id: \.self) { i in
+                    Text(self.message ?? " ").font(.caption)
+                    Divider()
+
+                    List(0..<recordCount, id: \.self) { i in
+                        //ForEach(0..<recordCount, id: \.self) { i in
                             NavigationLink("Database Record \(i)", value: i)
-                        }
+                        //}
                     }
                 }
                 .navigationTitle("\(recordCount) records")
@@ -76,4 +69,44 @@ struct ContentView: View {
             .tabItem { Label("Settings", systemImage: "gearshape.fill") }
         }
     }
+
+    @MainActor func insert(rows: Int) throws {
+        let startTime = Date.now
+        try database.transaction {
+            let stmnt = try database.prepare(sql: "INSERT INTO \(tableName) VALUES (?)")
+            for _ in 0..<recordCount {
+                try stmnt.update([.text(UUID().uuidString)])
+            }
+        }
+        let t = Date.now.timeIntervalSince(startTime)
+        msg("Inserted \(recordCount) into \(tableName) in \(round(t * 1_000.0) / 1_000.0)")
+    }
+
+    @MainActor func msg(_ message: String) {
+        logger.info("\(message)")
+        self.message = message
+    }
+
+    @MainActor func clearDatabase() throws {
+        let startTime = Date.now
+        let count = try database.mutex {
+            defer { self.recordCount = 0 }
+            return try database.exec(sql: "DELETE FROM \(tableName)")
+        }
+        let t = Date.now.timeIntervalSince(startTime)
+        msg("Cleared \(count) rows from \(tableName) in \(round(t * 1_000.0) / 10_000.0)")
+    }
+}
+
+func createSQLContext(in directory: URL = .temporaryDirectory) throws -> SQLContext {
+    let startTime = Date.now
+    let path = directory.appendingPathComponent("sql.db").path
+    let db = try SQLContext(path: path, flags: [.readWrite, .create])
+    try db.mutex {
+        try db.exec(sql: "PRAGMA journal_mode=DELETE") // disable WAL for performance
+        try db.exec(sql: "CREATE TABLE IF NOT EXISTS \(tableName) (STRING TEXT)")
+    }
+    let t = Date.now.timeIntervalSince(startTime)
+    logger.log("Created database \(path) in \(round(t * 1_000.0) / 10_000.0)")
+    return db
 }
