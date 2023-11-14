@@ -49,7 +49,7 @@ Android Studio's logcat tab for the transpiled Kotlin app.
 This project was initialized with the [skip](https://skip.tools) command:
 
 ```
-skip init --appid=skip.data.bake.App --icon-color=34AADC --free --no-build skipapp-databake DataBake DataBakeModel
+skip init --appid=skip.data.bake.App --icon-color=34AADC --free skipapp-databake DataBake DataBakeModel
 ```
  
 
