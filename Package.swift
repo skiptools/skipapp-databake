@@ -10,7 +10,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.iOS(.v16), .macOS(.v13), .tvOS(.v16), .watchOS(.v9), .macCatalyst(.v16)],
     products: [
-        .library(name: "DataBake", type: .dynamic, targets: ["DataBake"]),
+        .library(name: "DataBakeApp", type: .dynamic, targets: ["DataBake"]),
         .library(name: "DataBakeModel", type: .dynamic, targets: ["DataBakeModel"]),
     ],
     dependencies: [

@@ -43,3 +43,14 @@ A build phases runs the "Launch Android APK" script that
 will deploy the transpiled app a running Android emulator or connected device.
 Logging output for the iOS app can be viewed in the Xcode console, and in
 Android Studio's logcat tab for the transpiled Kotlin app.
+
+## Project
+
+This project was initialized with the [skip](https://skip.tools) command:
+
+```
+skip init --appid=skip.data.bake.App --icon-color=34AADC --free --no-build skipapp-databake DataBake DataBakeModel
+```
+ 
+
+

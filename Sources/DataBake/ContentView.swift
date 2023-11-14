@@ -10,12 +10,15 @@ let tableName = "DBTABLE"
 /// The local database
 let database = try! createSQLContext()
 
-struct ContentView: View {
+public struct ContentView: View {
     @AppStorage("setting") var setting = true
     @State var recordCount = 2
     @State var message: String? = nil
 
-    var body: some View {
+    public init() {
+    }
+    
+    public var body: some View {
         TabView {
             NavigationStack {
                 VStack {
