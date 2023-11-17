@@ -9,26 +9,3 @@
 # Info.plist (for the iOS ipa).
 build:
   contents:
-#    - block: 'android'
-#      remove:
-#        - 'namespace = group as String'
-#      contents:
-#        - 'namespace = "data.bake"'
-#        - block: 'defaultConfig'
-#          contents:
-#            # Android app config and AndroidManifest.xml metadata can be specified here
-#            - 'applicationId = System.getenv("PRODUCT_BUNDLE_IDENTIFIER") ?: "data.bake"'
-#        - block: 'buildFeatures'
-#          contents:
-#            - 'buildConfig = true'
-#        - block: 'buildTypes'
-#          contents:
-#            - block: 'release'
-#              contents:
-#                # by default create an -unsigned.apk; for publishing to an app store, a valid keystore will need to be provided
-#                - 'signingConfig = signingConfigs.findByName("debug")'
-#                # enabling minification reduces compose dependency classe size ~85%
-#                - 'isMinifyEnabled = true'
-#                - 'isShrinkResources = true'
-#                - 'isDebuggable = true'
-#                - 'proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")'
