@@ -1,28 +1,28 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%lld records" : {
+    "%@" : {
 
     },
-    "Clear Database" : {
+    "%lld records" : {
 
     },
     "Database" : {
 
     },
-    "Database Record %lld" : {
-
-    },
-    "Increase Records" : {
-
-    },
     "Option" : {
 
     },
-    "Record %lld" : {
+    "Refresh" : {
+
+    },
+    "Reset" : {
 
     },
     "Settings" : {
+
+    },
+    "Shuffle" : {
 
     }
   },

@@ -7,60 +7,22 @@ import OSLog
 import SkipSQL
 import DataBakeModel
 
-
-/// The local database
-let db = try! DataBakeManager(in: URL.temporaryDirectory)
-
 public struct ContentView: View {
     @AppStorage("setting") var setting = true
-    @State var recordCount = 2
     @State var message: String? = nil
+    @ObservedObject var db: DataBakeManager
 
-    public init() {
-    }
-    
     public var body: some View {
         TabView {
             NavigationStack {
                 VStack {
-                    HStack {
-                        Button("Increase Records") {
-                            recordCount = (max(recordCount, 1)) * 2
-                            Task.detached {
-                                do {
-                                    try await insert(rows: recordCount)
-                                } catch {
-                                    await msg("\(error)")
-                                }
-                            }
-                        }
-                        Button("Clear Database") {
-                            Task.detached {
-                                do {
-                                    try await clearDatabase()
-                                } catch {
-                                    await msg("\(error)")
-                                }
-                            }
-                        }
+                    List($db.rowids, id: \.self, editActions: [.delete]) { id in
+                        dataItemRow(rowid: id.wrappedValue)
                     }
-                    .buttonStyle(.borderedProminent)
-
-                    Divider()
-                    Text(self.message ?? " ").font(.caption)
-                    Divider()
-
-                    List(0..<recordCount, id: \.self) { i in
-                        //ForEach(0..<recordCount, id: \.self) { i in
-                            NavigationLink("Database Record \(i)", value: i)
-                        //}
-                    }
-                }
-                .navigationTitle("\(recordCount) records")
-                .navigationDestination(for: Int.self) { i in
-                    Text("Database Record \(i)")
-                        .font(.title)
-                        .navigationTitle("Record \(i)")
+                    .navigationTitle("\(db.rowids.count) records")
+                    .navigationDestination(for: DataItem.RowID.self, destination: dataItemDestination)
+                    messageRow()
+                    commandButtonRow()
                 }
             }
             .tabItem { Label("Database", systemImage: "list.bullet") }
@@ -74,25 +36,122 @@ public struct ContentView: View {
         }
     }
 
-    @MainActor func insert(rows: Int) throws {
-        let startTime = Date.now
-        try db.insert(items: Array(Int64(0)..<Int64(rows)).map({ i in
-            DataItem(id: i, title: "Row #(i)", created: .now, contents: "Row content")
-        }))
-        let t = Date.now.timeIntervalSince(startTime)
-        msg("Inserted \(recordCount) in \(round(t * 1_000.0) / 1_000.0)")
+    func commandButtonRow() -> some View {
+        VStack {
+            HStack {
+                actionButton("+1") {
+                    try createItems(count: 1)
+                }
+                actionButton("+1K") {
+                    try createItems(count: 1_000)
+                }
+                actionButton("+10K") {
+                    try createItems(count: 10_000)
+                }
+            }
+
+            HStack {
+                actionButton("Refresh") {
+                    try db.reload()
+                }
+                actionButton("Shuffle") {
+                    try db.reload(orderBy: "RANDOM()")
+                }
+                actionButton("Reset") {
+                    try db.delete(ids: db.queryIDs())
+                }
+            }
+        }
+        .buttonStyle(.borderedProminent)
     }
 
-    @MainActor func msg(_ message: String) {
-        //logger.info("\(message)")
+    func actionButton(_ title: String, action: @escaping () throws -> ()) -> some View {
+        Button(title) {
+            let startTime = Date.now
+            do {
+                try withAnimation {
+                    try action()
+                }
+                msg("Action \"\(title)\" on \(db.rowids.count) rows in \(startTime.durationToNow)")
+            } catch {
+                msg("Error \"\(title)\": " + String(describing: error))
+            }
+        }
+        .frame(minWidth: 140.0, maxWidth: 140.0)
+    }
+
+    @ViewBuilder func messageRow() -> some View {
+        //Divider()
+        Text(self.message ?? " ")
+            .font(.caption)
+        //Divider()
+    }
+
+    func createItems(count: Int) throws {
+        let items = Array((0..<count).map({ _ in
+            DataItem(title: "New Item", created: .now, contents: UUID().uuidString)
+        }))
+
+        if items.count <= 1 {
+            try db.insert(items: items)
+        } else {
+            // when there is more than one ID, we add them in the background to demonstrate concurrent database access
+            Task.detached {
+                let startTime = Date.now
+                let blockSize = count / 100
+                for i in stride(from: 0, to: items.count, by: blockSize) {
+                    let itemBlock = Array(items[i..<min(i+blockSize, items.count)])
+
+                    await MainActor.run {
+                        insert(items: itemBlock)
+                    }
+                }
+                await msg("Insert \(items.count) rows in \(startTime.durationToNow)")
+            }
+        }
+    }
+
+    @MainActor func insert(items: [DataItem]) {
+        do {
+            let startTime = Date.now
+            for item in items {
+                try db.insert(items: [item])
+            }
+            msg("Insert \(items.count) rows in \(startTime.durationToNow)")
+        } catch {
+            msg("Error inserting: " + String(describing: error))
+        }
+    }
+
+    func msg(_ message: String) {
+        logger.info("\(message)")
         self.message = message
     }
 
-    @MainActor func clearDatabase() throws {
-        let startTime = Date.now
-        let ids = try db.queryIDs()
-        try db.delete(ids: ids)
-        let t = Date.now.timeIntervalSince(startTime)
-        msg("Cleared \(ids.count) rows in \(round(t * 1_000.0) / 10_000.0)")
+    @ViewBuilder func dataItemRow(rowid: DataItem.RowID) -> some View {
+        NavigationLink(value: rowid) {
+            HStack {
+                // if-let doesn't work with ViewBuilder yet
+                let item = (try? db.fetch(ids: [rowid]).first)
+                if item != nil {
+                    Text(rowid.description)
+                        .font(.caption)
+                        .bold()
+                    Text("\(item!.title)")
+                    //Text("\(item!.created.description)")
+                }
+            }
+        }
+    }
+
+    @ViewBuilder func dataItemDestination(rowid: DataItem.RowID) -> some View {
+       HStack {
+           // if-let doesn't work with ViewBuilder yet
+           let item = (try? db.fetch(ids: [rowid]).first)!
+           Text("\(item.title)")
+               .font(.title)
+           Text("\(item.created.description)")
+               .font(.title2)
+       }
     }
 }
