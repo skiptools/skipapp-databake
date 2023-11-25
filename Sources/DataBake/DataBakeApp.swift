@@ -16,7 +16,7 @@ let androidSDK = ProcessInfo.processInfo.environment["android.os.Build.VERSION.S
 ///
 /// The default implementation merely loads the `ContentView` for the app and logs a message.
 public struct RootView : View {
-    @StateObject var db = try! DataBakeManager(url: URL.documentsDirectory.appendingPathComponent("db.sqlite"))
+    @StateObject var db = try! DataBakeManager(url: URL.documentsDirectory.appendingPathComponent("databake.sqlite"))
 
     public init() {
     }

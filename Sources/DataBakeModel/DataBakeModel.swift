@@ -207,10 +207,10 @@ public class DataBakeManager : ObservableObject {
     private func databaseUpdated(action: SQLAction, rowid: Int64, dbname: String, tblname: String) {
         updateFromHook = true
         defer { updateFromHook = false }
-        logger.debug("update hook: \(action.description) \(dbname).\(tblname) \(rowid)")
+        //logger.debug("databaseUpdated: \(action.description) \(dbname).\(tblname) \(rowid)")
         if tblname == DataItem.tableName {
             switch action {
-            case .insert: self.rowids.insert(rowid, at: 0)
+            case .insert: self.rowids.append(rowid)
             case .delete: self.rowids.removeAll(where: { $0 == rowid })
             case .update: self.rowids = self.rowids
             }
@@ -256,12 +256,12 @@ public class DataBakeManager : ObservableObject {
     public func update(items: [DataItem]) throws {
         let sql = "UPDATE \(QTBL) SET " + DataItem.columnUpdate + " WHERE id = ?"
         let stmnt = try ctx.prepare(sql: sql)
-        defer { stmnt.close() }
         for item in items {
             if let id = item.id {
                 try stmnt.update(parameters: item.itemParameters + [SQLValue.integer(id)])
             }
         }
+        try stmnt.close()
     }
 
     /// Prepares the given SQL statement, caching and re-using it into the given statement handle.
@@ -322,7 +322,7 @@ public class DataBakeManager : ObservableObject {
             if cache {
                 stmnt.reset()
             } else {
-                stmnt.close()
+                try? stmnt.close()
             }
         }
         var items: [DataItem] = []
@@ -344,7 +344,7 @@ public class DataBakeManager : ObservableObject {
         }
         let stmnt = try ctx.prepare(sql: sql)
         try stmnt.bind(parameters: values)
-        defer { stmnt.close() }
+        defer { try? stmnt.close() }
         var ids: [Int64] = []
         while try stmnt.next() {
             ids.append(stmnt.integer(at: 0))

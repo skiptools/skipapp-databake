@@ -12,6 +12,10 @@ public struct ContentView: View {
     @State var message: String? = nil
     @ObservedObject var db: DataBakeManager
 
+    public init(db: DataBakeManager) {
+        self.db = db
+    }
+
     public var body: some View {
         TabView {
             NavigationStack {

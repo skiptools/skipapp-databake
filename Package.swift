@@ -14,11 +14,11 @@ let package = Package(
         .library(name: "DataBakeModel", type: .dynamic, targets: ["DataBakeModel"]),
     ],
     dependencies: [
-        .package(url: "https://source.skip.tools/skip.git", from: "0.7.28"),
-        .package(url: "https://source.skip.tools/skip-ui.git", from: "0.3.19"),
-        .package(url: "https://source.skip.tools/skip-foundation.git", from: "0.3.4"),
-        .package(url: "https://source.skip.tools/skip-model.git", from: "0.3.0"),
-        .package(url: "https://source.skip.tools/skip-sql.git", from: "0.3.6")
+        .package(url: "https://source.skip.tools/skip.git", from: "0.7.29"),
+        .package(url: "https://source.skip.tools/skip-ui.git", from: "0.3.24"),
+        .package(url: "https://source.skip.tools/skip-foundation.git", from: "0.3.6"),
+        .package(url: "https://source.skip.tools/skip-model.git", from: "0.3.1"),
+        .package(url: "https://source.skip.tools/skip-sql.git", from: "0.3.12")
     ],
     targets: [
         .target(name: "DataBake", dependencies: ["DataBakeModel", .product(name: "SkipUI", package: "skip-ui")], resources: [.process("Resources")], plugins: [.plugin(name: "skipstone", package: "skip")]),
