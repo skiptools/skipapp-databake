@@ -11,6 +11,7 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        maven("https://maven.skip.tools")
         mavenCentral()
         google()
     }
