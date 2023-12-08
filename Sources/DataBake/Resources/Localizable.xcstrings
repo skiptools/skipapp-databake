@@ -1,28 +1,31 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@" : {
-
-    },
-    "%lld records" : {
+    "Actions" : {
 
     },
     "Database" : {
 
     },
-    "Option" : {
+    "ID: %lld" : {
 
     },
-    "Refresh" : {
+    "Insert 1" : {
+
+    },
+    "Insert 1,000" : {
+
+    },
+    "Insert 10,000" : {
+
+    },
+    "Option" : {
 
     },
     "Reset" : {
 
     },
     "Settings" : {
-
-    },
-    "Shuffle" : {
 
     }
   },
