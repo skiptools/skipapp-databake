@@ -1,13 +1,28 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld Records" : {
+
+    },
+    "1 Record" : {
+
+    },
     "Actions" : {
+
+    },
+    "Contents" : {
+
+    },
+    "Created" : {
 
     },
     "Database" : {
 
     },
-    "ID: %lld" : {
+    "Enter contents" : {
+
+    },
+    "Enter title" : {
 
     },
     "Insert 1" : {
@@ -19,13 +34,28 @@
     "Insert 10,000" : {
 
     },
-    "Option" : {
+    "Loading…" : {
+
+    },
+    "Modified" : {
+
+    },
+    "Record %lld" : {
 
     },
     "Reset" : {
 
     },
+    "Save" : {
+
+    },
     "Settings" : {
+
+    },
+    "Sort newest to oldest" : {
+
+    },
+    "Title" : {
 
     }
   },

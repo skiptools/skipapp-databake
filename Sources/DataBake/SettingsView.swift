@@ -4,12 +4,13 @@
 
 import SwiftUI
 
+/// Application settings.
 struct SettingsView: View {
-    @AppStorage("setting") var setting = true
+    @AppStorage("reverseSort") var reverseSort = false
 
     var body: some View {
         Form {
-            Toggle("Option", isOn: $setting)
+            Toggle("Sort newest to oldest", isOn: $reverseSort)
         }
         .navigationTitle("Settings")
     }

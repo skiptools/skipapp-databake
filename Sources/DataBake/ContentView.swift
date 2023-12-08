@@ -5,6 +5,7 @@
 import DataBakeModel
 import SwiftUI
 
+/// Application UI scaffold.
 struct ContentView: View {
     let model: DataBakeModel
     

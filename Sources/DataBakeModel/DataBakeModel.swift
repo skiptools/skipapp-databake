@@ -76,13 +76,14 @@ public actor DataBakeModel {
     /// Return previews of all items, optionally filtering on the title.
     ///
     /// Returned items are sorted on ID.
-    public func dataItemPreviews(titlePrefix: String = "") throws -> [DataItemPreview] {
+    public func dataItemPreviews(titlePrefix: String = "", descending: Bool = false) throws -> [DataItemPreview] {
         try initializeSchema()
         let statement: SQLStatement
+        let direction = descending ? "DESC" : "ASC"
         if titlePrefix.isEmpty {
-            statement = try ctx.prepare(sql: "SELECT id, title FROM DataItem ORDER BY id ASC")
+            statement = try ctx.prepare(sql: "SELECT id, title FROM DataItem ORDER BY id \(direction)")
         } else {
-            statement = try ctx.prepare(sql: "SELECT id, title FROM DataItem WHERE title LIKE ? ORDER BY id ASC")
+            statement = try ctx.prepare(sql: "SELECT id, title FROM DataItem WHERE title LIKE ? ORDER BY id \(direction)")
             try statement.bind(.text(titlePrefix + "%"), at: 1)
         }
         defer { do { try statement.close() } catch {} }

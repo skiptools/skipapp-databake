@@ -6,14 +6,15 @@ import Combine
 import DataBakeModel
 import SwiftUI
 
+/// Searchable list of records.
 struct ListView: View {
     let model: DataBakeModel
     @StateObject var viewModel: ListViewModel
     @State var isActionsPresented = false
+    @AppStorage("reverseSort") var reverseSort = false
 
     init(model: DataBakeModel) {
         self.model = model
-        logger.log("CREATING NEW STATE OBJECT ===========") //~~~
         _viewModel = StateObject<ListViewModel>(wrappedValue: ListViewModel(model: model))
     }
 
@@ -68,16 +69,25 @@ struct ListView: View {
                 viewModel.reset()
             }
         }
+        // For iOS 17+ we could get rid of .onAppear and use the new .onChange that fires on initial value too
+        .onAppear {
+            viewModel.updatePreviews(reverseSort: reverseSort)
+        }
+        .onChange(of: reverseSort) {
+            viewModel.updatePreviews(reverseSort: $0)
+        }
     }
 }
 
 /// View model for list view.
 @MainActor class ListViewModel: ObservableObject {
     let model: DataBakeModel
-    @Published var previews: [DataItemPreview]?
-    @Published var message = ""
+    @Published private(set) var previews: [DataItemPreview]?
+    @Published private(set) var message = ""
     @Published var searchString = ""
+    private var reverseSort = false
     private var subscriptions: Set<AnyCancellable> = []
+    private var batching = false
 
     init(model: DataBakeModel) {
         self.model = model
@@ -88,7 +98,6 @@ struct ListView: View {
             .dropFirst() // Initial property value
             .debounce(for: 0.2, scheduler: RunLoop.main)
             .sink { [weak self] in
-                logger.log("GOT NEW SEARCH STRING ===========") //~~~
                 self?.updatePreviews(titlePrefix: $0)
             }
             .store(in: &subscriptions)
@@ -97,7 +106,6 @@ struct ListView: View {
         NotificationCenter.default.publisher(for: .dataItemsDidChange)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
-                logger.log("GOT NEW NOTIFICATION ===========") //~~~
                 if let change = $0.object as? DataItemsChange {
                     self?.updatePreviews(change: change)
                 }
@@ -126,9 +134,11 @@ struct ListView: View {
         message = "Inserting…"
         perform(verb: "Inserted") {
             // Insert in batches so that the user gets feedback
+            let batchSize = 100
+            self.batching = count > batchSize
             var remaining = count
             while remaining > 0 {
-                let batchCount = min(remaining, 100)
+                let batchCount = min(remaining, batchSize)
                 let dataItems = (0..<batchCount).map { _ in
                     var title = UUID().uuidString
                     if let dashIndex = title.firstIndex(of: "-") {
@@ -139,6 +149,7 @@ struct ListView: View {
                 try await self.model.insert(dataItems)
                 remaining -= batchCount
             }
+            self.batching = false
             return count
         }
     }
@@ -159,9 +170,14 @@ struct ListView: View {
         }
     }
 
+    func updatePreviews(reverseSort: Bool) {
+        self.reverseSort = reverseSort
+        updatePreviews(titlePrefix: searchString)
+    }
+
     private func updatePreviews(titlePrefix: String) {
         perform(verb: "Found") {
-            self.previews = try await self.model.dataItemPreviews(titlePrefix: self.searchString)
+            self.previews = try await self.model.dataItemPreviews(titlePrefix: self.searchString, descending: self.reverseSort)
             return self.previews?.count ?? 0
         }
     }
@@ -188,12 +204,18 @@ struct ListView: View {
             }
             updatedPreviews.remove(atOffsets: removeIndexes)
         }
-        for insert in change.inserts {
-            if insert.title.hasPrefix(searchString) {
-                updatedPreviews.append(insert.preview)
-            }
+        let inserts = change.inserts.filter { $0.title.hasPrefix(searchString) }.map { $0.preview }
+        if reverseSort {
+            updatedPreviews = inserts.reversed() + updatedPreviews
+        } else {
+            updatedPreviews += inserts
         }
-        self.previews = updatedPreviews
+        // Don't animate if batching because the successive animations make the UI unresponsive
+        if batching {
+            self.previews = updatedPreviews
+        } else {
+            withAnimation { self.previews = updatedPreviews }
+        }
     }
 }
 
@@ -210,119 +232,3 @@ struct DataItemPreviewView : View {
         }
     }
 }
-
-
-
-//func commandButtonRow() -> some View {
-//    VStack {
-//        HStack {
-//            actionButton("+1") {
-//                try createItems(count: 1)
-//            }
-//            actionButton("+1K") {
-//                try createItems(count: 1_000)
-//            }
-//            actionButton("+10K") {
-//                try createItems(count: 10_000)
-//            }
-//        }
-//
-//        HStack {
-//            actionButton("Refresh") {
-//                try db.reload()
-//            }
-//            actionButton("Shuffle") {
-//                try db.reload(orderBy: "RANDOM()")
-//            }
-//            actionButton("Reset") {
-//                try db.delete(ids: db.queryIDs())
-//            }
-//        }
-//    }
-//    .buttonStyle(.borderedProminent)
-//}
-//
-//func actionButton(_ title: String, action: @escaping () throws -> ()) -> some View {
-//    Button(title) {
-//        let startTime = Date.now
-//        do {
-//            try withAnimation {
-//                try action()
-//            }
-//            msg("Action \"\(title)\" on \(db.rowids.count) rows in \(startTime.durationToNow)")
-//        } catch {
-//            msg("Error \"\(title)\": " + String(describing: error))
-//        }
-//    }
-//    .frame(minWidth: 140.0, maxWidth: 140.0)
-//}
-//
-//
-//func createItems(count: Int) throws {
-//    let items = Array((0..<count).map({ _ in
-//        DataItem(title: "New Item", created: .now, contents: UUID().uuidString)
-//    }))
-//
-//    if items.count <= 1 {
-//        try db.insert(items: items)
-//    } else {
-//        // when there is more than one ID, we add them in the background to demonstrate concurrent database access
-//        Task.detached {
-//            let startTime = Date.now
-//            let blockSize = count / 100
-//            for i in stride(from: 0, to: items.count, by: blockSize) {
-//                let itemBlock = Array(items[i..<min(i+blockSize, items.count)])
-//
-//                await MainActor.run {
-//                    insert(items: itemBlock)
-//                }
-//            }
-//            await msg("Insert \(items.count) rows in \(startTime.durationToNow)")
-//        }
-//    }
-//}
-//
-//@MainActor func insert(items: [DataItem]) {
-//    do {
-//        let startTime = Date.now
-//        for item in items {
-//            try db.insert(items: [item])
-//        }
-//        msg("Insert \(items.count) rows in \(startTime.durationToNow)")
-//    } catch {
-//        msg("Error inserting: " + String(describing: error))
-//    }
-//}
-//
-//func msg(_ message: String) {
-//    logger.info("\(message)")
-//    self.message = message
-//}
-//
-//@ViewBuilder func dataItemRow(rowid: DataItem.RowID) -> some View {
-//    NavigationLink(value: rowid) {
-//        HStack {
-//            // if-let doesn't work with ViewBuilder yet
-//            let item = (try? db.fetch(ids: [rowid]).first)
-//            if item != nil {
-//                Text(rowid.description)
-//                    .font(.caption)
-//                    .bold()
-//                Text("\(item!.title)")
-//                //Text("\(item!.created.description)")
-//            }
-//        }
-//    }
-//}
-//
-//@ViewBuilder func dataItemDestination(rowid: DataItem.RowID) -> some View {
-//   HStack {
-//       // if-let doesn't work with ViewBuilder yet
-//       let item = (try? db.fetch(ids: [rowid]).first)!
-//       Text("\(item.title)")
-//           .font(.title)
-//       Text("\(item.created.description)")
-//           .font(.title2)
-//   }
-//}
-//}
