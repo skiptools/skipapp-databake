@@ -91,7 +91,6 @@ struct ListView: View {
 
     init(model: DataBakeModel) {
         self.model = model
-        updatePreviews(titlePrefix: "")
 
         // Update our previews as the user searches
         $searchString

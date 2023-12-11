@@ -15,7 +15,7 @@ struct ContentView: View {
                 ListView(model: model)
             }
             .tabItem { Label("Database", systemImage: "list.bullet") }
-            
+
             NavigationStack {
                 SettingsView()
             }
