@@ -11,7 +11,7 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v13), .tvOS(.v16), .watchOS(.v9), .macCatalyst(.v16)],
     products: [
         .library(name: "DataBakeApp", type: .dynamic, targets: ["DataBake"]),
-        .library(name: "DataBakeModel", type: .dynamic, targets: ["DataBakeModel"]),
+        .library(name: "DataBakeModel", targets: ["DataBakeModel"]),
     ],
     dependencies: [
         .package(url: "https://source.skip.tools/skip.git", from: "0.7.32"),
