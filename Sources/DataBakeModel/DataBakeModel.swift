@@ -177,7 +177,7 @@ public actor DataBakeModel {
     ///
     /// - Returns: The number of records deleted.
     @discardableResult public func deleteDataItems(ids: [Int64]? = nil) throws -> Int {
-        try  initializeSchema()
+        try initializeSchema()
         if let ids {
             try ctx.exec(sql: "DELETE FROM DataItem WHERE id IN (\(ids.map(\.description).joined(separator: ",")))")
             NotificationCenter.default.post(name: .dataItemsDidChange, object: DataItemsChange(deletes: ids))
