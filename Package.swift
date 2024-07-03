@@ -11,13 +11,13 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v13), .tvOS(.v16), .watchOS(.v9), .macCatalyst(.v16)],
     products: [
         .library(name: "DataBakeApp", type: .dynamic, targets: ["DataBake"]),
-        .library(name: "DataBakeModel", targets: ["DataBakeModel"]),
+        .library(name: "DataBakeModel", type: .dynamic, targets: ["DataBakeModel"]),
     ],
     dependencies: [
-        .package(url: "https://source.skip.tools/skip.git", from: "0.8.25"),
-        .package(url: "https://source.skip.tools/skip-ui.git", from: "0.5.19"),
-        .package(url: "https://source.skip.tools/skip-foundation.git", from: "0.5.14"),
-        .package(url: "https://source.skip.tools/skip-model.git", from: "0.5.4"),
+        .package(url: "https://source.skip.tools/skip.git", from: "0.9.2"),
+        .package(url: "https://source.skip.tools/skip-ui.git", from: "0.10.0"),
+        .package(url: "https://source.skip.tools/skip-foundation.git", from: "0.7.0"),
+        .package(url: "https://source.skip.tools/skip-model.git", from: "0.8.0"),
         .package(url: "https://source.skip.tools/skip-sql.git", from: "0.6.2")
     ],
     targets: [
