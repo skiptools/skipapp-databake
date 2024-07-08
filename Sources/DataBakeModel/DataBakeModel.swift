@@ -6,7 +6,7 @@ import Foundation
 import OSLog
 import Observation
 import SkipSQL
-//import SkipSQLPlus // for full-text search, JSON, or encryption support
+import SkipSQLPlus // for full-text search, JSON, or encryption support
 
 let logger: Logger = Logger(subsystem: "skip.data.bake.Model", category: "DataBake")
 
@@ -71,7 +71,7 @@ public actor DataBakeModel {
     private var schemaInitializationResult: Result<Void, Error>?
 
     public init(url: URL?) throws {
-        ctx = try SQLContext(path: url?.path ?? ":memory:", flags: [.readWrite, .create], logLevel: .info) // , configuration: .plus)
+        ctx = try SQLContext(path: url?.path ?? ":memory:", flags: [.readWrite, .create], logLevel: .info, configuration: .plus)
     }
 
     /// Return previews of all items, optionally filtering on the title.
