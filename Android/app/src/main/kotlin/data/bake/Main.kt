@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 
 import android.Manifest
 import android.app.Application
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
