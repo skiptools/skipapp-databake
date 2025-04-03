@@ -61,6 +61,9 @@ struct ListView: View {
             Button("Insert 10,000") {
                 viewModel.insert(count: 10_000)
             }
+            //Button("Insert 1,000,000") {
+            //    viewModel.insert(count: 1_000_000)
+            //}
             Button("Reset", role: .destructive) {
                 viewModel.reset()
             }

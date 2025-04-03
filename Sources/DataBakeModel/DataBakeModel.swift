@@ -87,8 +87,8 @@ public actor DataBakeModel {
 
         var previews: [DataItemPreview] = []
         while try statement.next() {
-            let id = statement.integer(at: 0)
-            let title = statement.string(at: 1) ?? ""
+            let id = statement.long(at: 0)
+            let title = statement.text(at: 1) ?? ""
             previews.append(DataItemPreview(id: id, title: title))
         }
         return previews
@@ -98,17 +98,17 @@ public actor DataBakeModel {
     public func dataItem(id: Int64) throws -> DataItem? {
         try initializeSchema()
         let statement = try ctx.prepare(sql: "SELECT id, title, created, modified, contents FROM DataItem WHERE id = ?")
-        try statement.bind(.integer(id), at: 1)
+        try statement.bind(.long(id), at: 1)
         defer { do { try statement.close() } catch {} }
 
         guard try statement.next() else {
             return nil
         }
-        let id = statement.integer(at: 0)
-        let title = statement.string(at: 1) ?? ""
-        let createdTime = statement.double(at: 2)
-        let modifiedTime = statement.double(at: 3)
-        let contents = statement.string(at: 4) ?? ""
+        let id = statement.long(at: 0)
+        let title = statement.text(at: 1) ?? ""
+        let createdTime = statement.real(at: 2)
+        let modifiedTime = statement.real(at: 3)
+        let contents = statement.text(at: 4) ?? ""
         return DataItem(id: id, title: title, created: Date(timeIntervalSince1970: createdTime), modified: modifiedTime == 0.0 ? nil : Date(timeIntervalSince1970: modifiedTime), contents: contents)
     }
 
@@ -149,7 +149,7 @@ public actor DataBakeModel {
         defer { do { try statement.close() } catch {} }
 
         var bindingValues = Self.bindingValues(for: dataItem)
-        bindingValues.append(.integer(dataItem.id))
+        bindingValues.append(.long(dataItem.id))
         try statement.update(parameters: bindingValues)
         if ctx.changes > 0 {
             NotificationCenter.default.post(name: .dataItemsDidChange, object: DataItemsChange(updates: [(existingItem, dataItem)]))
@@ -160,10 +160,10 @@ public actor DataBakeModel {
     }
 
     private static func bindingValues(for dataItem: DataItem) -> [SQLValue] {
-        let modifiedValue: SQLValue = dataItem.modified == nil ? .null : .float(dataItem.modified!.timeIntervalSince1970)
+        let modifiedValue: SQLValue = dataItem.modified == nil ? .null : .real(dataItem.modified!.timeIntervalSince1970)
         return [
             .text(dataItem.title),
-            .float(dataItem.created.timeIntervalSince1970),
+            .real(dataItem.created.timeIntervalSince1970),
             modifiedValue,
             .text(dataItem.contents)
         ]
@@ -210,7 +210,7 @@ public actor DataBakeModel {
     private func currentSchemaVersion() throws -> Int64 {
         try ctx.exec(sql: "CREATE TABLE IF NOT EXISTS SchemaVersion (id INTEGER PRIMARY KEY, version INTEGER)")
         try ctx.exec(sql: "INSERT OR IGNORE INTO SchemaVersion (id, version) VALUES (0, 0)")
-        return try ctx.query(sql: "SELECT version FROM SchemaVersion").first?.first?.integerValue ?? Int64(0)
+        return try ctx.query(sql: "SELECT version FROM SchemaVersion").first?.first?.longValue ?? Int64(0)
     }
 
     private func migrateSchema(v version: Int64, current: Int64, ddl: String) throws -> Int64 {
@@ -220,7 +220,7 @@ public actor DataBakeModel {
         let startTime = Date.now
         try ctx.transaction {
             try ctx.exec(sql: ddl)
-            try ctx.exec(sql: "UPDATE SchemaVersion SET version = ?", parameters: [.integer(version)])
+            try ctx.exec(sql: "UPDATE SchemaVersion SET version = ?", parameters: [.long(version)])
         }
         logger.log("updated database schema to \(version) in \(Date.now.timeIntervalSince1970 - startTime.timeIntervalSince1970)")
         return version
