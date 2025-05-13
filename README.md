@@ -1,6 +1,6 @@
 # DataBake
 
-This app demonstrates using a local database in a Skip app
+This app demonstrates using a local database in a [Skip Lite](https://skip.tools) app
 using the SkipSQL package to update an embedded database.
 
 ![Screenshot](https://assets.skip.tools/skipapp-databake-dev-screenshot.png)
@@ -12,8 +12,6 @@ This sample app build on the [SkipSQL](http://source.skip.tools/skip-sql) packag
 to provide an embedded database and a domain-specific model layer ("DataBakeModel")
 that provides an interface for storing and retrieving instance of a
 `DataItem` from rows in the database.
-
-
 
 ## Building
 
