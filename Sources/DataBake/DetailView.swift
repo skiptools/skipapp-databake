@@ -17,8 +17,8 @@ struct DetailView: View {
     var body: some View {
         Form {
             TextField("Title", text: $dataItem.title, prompt: Text("Enter title"))
-            LabeledValue(label: "Created", value: dataItem.created.description)
-            LabeledValue(label: "Modified", value: dataItem.modified == nil ? "Never" : dataItem.modified!.description)
+            LabeledValue(label: "Created", value: dataItem.created.formatted())
+            LabeledValue(label: "Modified", value: dataItem.modified == nil ? "Never" : dataItem.modified!.formatted())
             TextField("Contents", text: $dataItem.contents, prompt: Text("Enter contents"))
         }
         .navigationTitle("Record \(id)")

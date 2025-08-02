@@ -144,7 +144,7 @@ struct ListView: View {
                     }
                     return DataItem(title: title, contents: "Initial contents")
                 }
-                try await self.model.insert(dataItems)
+                try self.model.insert(dataItems)
                 remaining -= batchCount
             }
             self.batching = false
@@ -156,15 +156,15 @@ struct ListView: View {
         guard let previews else {
             return
         }
-        let ids = indexes.map { previews[$0].id }
+        let items = indexes.map { previews[$0] }
         perform(verb: "Deleted") {
-            return try await self.model.deleteDataItems(ids: ids)
+            return try self.model.deleteDataItems(items: items)
         }
     }
 
     func reset() {
         perform(verb: "Cleared") {
-            return try await self.model.deleteDataItems()
+            return try self.model.deleteDataItems()
         }
     }
 
@@ -175,7 +175,7 @@ struct ListView: View {
 
     private func updatePreviews(titlePrefix: String) {
         perform(verb: "Found") {
-            self.previews = try await self.model.dataItemPreviews(titlePrefix: self.searchString, descending: self.reverseSort)
+            self.previews = try self.model.dataItemPreviews(titlePrefix: self.searchString, descending: self.reverseSort)
             return self.previews?.count ?? 0
         }
     }
