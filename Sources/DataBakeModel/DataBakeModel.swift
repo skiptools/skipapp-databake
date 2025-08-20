@@ -119,7 +119,11 @@ public final class DataBakeModel {
     /// Returned items are sorted on ID.
     public func dataItemPreviews(titlePrefix: String = "", descending: Bool = false) throws -> [DataItemPreview] {
         try initializeSchema()
-        return try ctx.query(DataItemPreview.self, where: titlePrefix.isEmpty ? nil : .like(DataItem.title, SQLValue.text(titlePrefix + "%")), orderBy: [(DataItemPreview.id, descending ? .descending : .ascending)]).load()
+        return try ctx.query(DataItemPreview.self)
+            .where(titlePrefix.isEmpty ? nil : .like(DataItem.title, SQLValue.text(titlePrefix + "%")))
+            .orderBy(DataItemPreview.id, order: descending ? .descending : .ascending)
+            .eval()
+            .load()
     }
 
     /// Return the data item with the given ID.
