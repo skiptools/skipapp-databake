@@ -2,7 +2,7 @@ import XCTest
 import OSLog
 import Foundation
 @testable import DataBakeModel
-import SkipSQL
+import SkipSQLCore
 
 let logger: Logger = Logger(subsystem: "DataBakeModel", category: "Tests")
 
