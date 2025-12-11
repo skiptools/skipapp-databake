@@ -1,7 +1,7 @@
 import Foundation
 import OSLog
 import Observation
-import SkipSQL
+import SkipSQLCore
 import SkipSQLPlus // for full-text search, JSON, or encryption support
 
 let logger: Logger = Logger(subsystem: "skip.data.bake.Model", category: "DataBake")
