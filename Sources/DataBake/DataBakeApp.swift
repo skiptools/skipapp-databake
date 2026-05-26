@@ -8,7 +8,7 @@ let logger: Logger = Logger(subsystem: "skip.data.bake.App", category: "DataBake
 let androidSDK = ProcessInfo.processInfo.environment["android.os.Build.VERSION.SDK_INT"].flatMap({ Int($0) })
 
 /// The shared data model.
-private let model = try! DataBakeModel(url: URL.documentsDirectory.appendingPathComponent("databake.sqlite"))
+nonisolated(unsafe) private let model = try! DataBakeModel(url: URL.documentsDirectory.appendingPathComponent("databake.sqlite"))
 
 /// The shared top-level view for the app, loaded from the platform-specific App delegates below.
 ///

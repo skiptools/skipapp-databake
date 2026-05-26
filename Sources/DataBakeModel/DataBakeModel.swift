@@ -19,7 +19,7 @@ public struct DataItem : SQLCodable {
     public var contents: String
     static let contents = SQLColumn(name: "contents", type: .text, nullable: false)
 
-    public static var table = SQLTable(name: "DataItem", columns: [id, title, created, modified, contents])
+    nonisolated(unsafe) public static var table = SQLTable(name: "DataItem", columns: [id, title, created, modified, contents])
 
     public init(id: Int64? = nil, title: String, created: Date? = nil, modified: Date? = nil, contents: String) {
         self.id = id
@@ -58,7 +58,7 @@ public struct DataItemPreview : SQLCodable, Identifiable {
     public var title: String
     static let title = DataItem.title
 
-    public static var table = SQLTable(name: DataItem.table.name, columns: [id, title])
+    nonisolated(unsafe) public static var table = SQLTable(name: DataItem.table.name, columns: [id, title])
 
     public init(id: Int64, title: String) {
         self.id = id
