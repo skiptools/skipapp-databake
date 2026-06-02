@@ -64,6 +64,7 @@ open class MainActivity: AppCompatActivity {
             val saveableStateHolder = rememberSaveableStateHolder()
             saveableStateHolder.SaveableStateProvider(true) {
                 PresentationRootView(ComposeContext())
+                SideEffect { saveableStateHolder.removeState(true) }
             }
         }
 
